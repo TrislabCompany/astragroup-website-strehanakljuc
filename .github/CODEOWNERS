@@ -1,4 +1,4 @@
 * @TrislabCompany/astragroup-strehanakljuc
 /.github/ @TrislabCompany/astragroup-strehanakljuc @TrislabCompany/devops
-/platform.yaml @TrislabCompany/astragroup-strehanakljuc @TrislabCompany/devops
-/.trivyignore @TrislabCompany/astragroup-strehanakljuc @TrislabCompany/devops
+/public/_headers @TrislabCompany/astragroup-strehanakljuc @TrislabCompany/devops
+/scripts/write-config.mjs @TrislabCompany/astragroup-strehanakljuc @TrislabCompany/devops

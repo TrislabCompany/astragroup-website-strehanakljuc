@@ -3,67 +3,66 @@
 // values here; the shape is in src/lib/site-settings.ts. Nothing here is
 // secret: it all ends up in the public pages. Values that differ per
 // Environment go to /config.json instead (src/lib/config.ts).
+// First written by `pnpm init-site` from site.yaml; from then on it is the
+// site's own.
 
-import shareImage from "./assets/sample/share.jpg";
 import type { SiteSettings } from "./lib/site-settings";
 
 /** The site's languages. With one language, the URLs have no language prefix. */
-export const languages = ["en", "sl"] as const;
+export const languages = ["sl"] as const;
 export type Lang = (typeof languages)[number];
 
 const site: SiteSettings<Lang> = {
-  url: "https://www.example.com",
-  name: "Website template",
+  url: "https://strehanakljuc.si",
+  name: "Streha na ključ",
   description: {
-    en: "A sample site built from tl-template-website.",
-    sl: "Vzorčna stran, zgrajena iz tl-template-website.",
+    sl: "Prenova strehe in nova streha na ključ, korak za korakom: od ogleda do predaje. Pošljite povpraševanje za brezplačno ponudbo."
   },
-  languages,
-  defaultLanguage: "en",
-  shareImage: {
-    src: shareImage,
-    alt: { en: "The name of the website template on a blue background", sl: "Ime predloge spletne strani na modri podlagi" },
-  },
-  themeColor: "#2457c5",
-
-  // Lists of items kept as Markdown: src/content/<id>/<language>/<name>.md.
-  // Each id also needs a collection in src/content.config.ts.
+  languages: languages,
+  defaultLanguage: "sl",
+  themeColor: "#263a45",
   collections: [
     {
-      id: "services",
-      title: { en: "Services", sl: "Storitve" },
-      lead: { en: "A sample list of items, kept as Markdown files.", sl: "Vzorčen seznam elementov, shranjenih kot datoteke Markdown." },
+      id: "pogosta-vprasanja",
+      title: {
+        sl: "Pogosta vprašanja"
+      },
+      lead: {
+        sl: "Odgovori na vprašanja o dovoljenjih, letnem času, puščanju strehe in subvencijah."
+      },
       nav: true,
-      home: true,
-    },
+      home: false
+    }
   ],
-
   company: {
-    name: "Example",
-    legalName: "Example d.o.o.",
-    address: { street: "Example street 1", postalCode: "1000", city: "Ljubljana", country: "SI" },
-    registrationNumber: "0000000000",
-    vatId: "SI00000000",
+    name: "Astra Group",
+    legalName: "ASTRA GROUP d.o.o.",
+    address: {
+      street: "Ulica 15. maja 2",
+      postalCode: "6000",
+      city: "Koper - Capodistria",
+      country: "SI"
+    },
+    registrationNumber: "6610463000",
+    vatId: "SI50724240",
     logo: "/favicon.svg",
-    profiles: [],
+    profiles: []
   },
-
   contact: {
-    topics: [
-      { email: "info@example.com", label: { en: "General questions", sl: "Splošna vprašanja" } },
-      { email: "sales@example.com", label: { en: "Sales", sl: "Prodaja" } },
-    ],
-    mapUrl: "https://www.openstreetmap.org/search?query=Ljubljana",
+    // No public mailbox: the quote request form is the site's only contact.
+    topics: []
   },
-
-  legalPages: { imprint: true, privacy: true, accessibility: true, sustainability: true },
-
-  structuredData: "Organization",
-
+  legalPages: {
+    imprint: true,
+    privacy: true,
+    accessibility: true,
+    sustainability: false
+  },
+  structuredData: "LocalBusiness",
   securityTxt: {
-    contact: "mailto:security@example.com",
-    expires: "2027-10-31T23:00:00.000Z",
-  },
+    contact: "mailto:info@trislab.com",
+    expires: "2027-11-11T22:09:52.871Z"
+  }
 };
 
 export default site;

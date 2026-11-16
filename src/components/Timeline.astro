@@ -1,0 +1,42 @@
+---
+// The numbered timeline of a journey on a slate band: per step one sentence
+// and "what you get". Large patina numerals; vertical on a phone, a row of
+// columns on a wide screen when there are few steps.
+import { t, type Lang } from "../i18n";
+import type { Step } from "../texts";
+
+interface Props {
+  lang: Lang;
+  heading: string;
+  id: string;
+  steps: Step[];
+  lead?: string;
+}
+
+const { lang, heading, id, steps, lead } = Astro.props;
+---
+
+<section class="band band-dark" aria-labelledby={id}>
+  <div class="wrap">
+    <h2 id={id}>{heading}</h2>
+    {lead && <p class="lead">{lead}</p>}
+    <ol class:list={["timeline", { "timeline-row": steps.length <= 5 }]}>
+      {
+        steps.map((step, index) => (
+          <li class="timeline-step">
+            <span class="timeline-number" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <div>
+              <h3>{step.title}</h3>
+              <p>{step.text}</p>
+              <p class="timeline-result">
+                <strong>{t(lang, "steps.result")}:</strong> {step.result}
+              </p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

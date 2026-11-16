@@ -1,0 +1,27 @@
+---
+// Nova streha na ključ: what "na ključ" includes and the steps from the
+// plans to the handover.
+import Checklist from "../../components/Checklist.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import QuoteCta from "../../components/QuoteCta.astro";
+import RoofLayers from "../../components/RoofLayers.astro";
+import TextBlocks from "../../components/TextBlocks.astro";
+import Timeline from "../../components/Timeline.astro";
+import { languagePaths, type Lang } from "../../i18n";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { pageTexts } from "../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { newRoof, home } = pageTexts(lang);
+---
+
+<BaseLayout title={newRoof.intro.title} description={newRoof.intro.description} lang={lang}>
+  <PageIntro intro={newRoof.intro} />
+  <TextBlocks blocks={[newRoof.meaning]} />
+  <Checklist id="included" heading={newRoof.includedHeading} items={newRoof.included} />
+  <Timeline lang={lang} id="steps" heading={newRoof.stepsHeading} steps={newRoof.steps} />
+  <RoofLayers lang={lang} heading={home.layersHeading} lead={home.layersLead} />
+  <QuoteCta lang={lang} />
+</BaseLayout>

@@ -1,7 +1,9 @@
 ---
-// The site's logo mark: a neutral sample, replace it with the brand's. One of
-// the two brand files with public/favicon.svg. Decorative: the name next to it
-// carries the meaning, so it is hidden from assistive technology.
+// The site's logo mark: a copper roof ridge over a slate square, with a key
+// bit under it ("na ključ"). Drawn for this site; it carries no mark of the
+// company. One of the two brand files with public/favicon.svg. Decorative: the
+// name next to it carries the meaning, so it is hidden from assistive
+// technology. The colours come from src/styles/tokens.css (.logo-* in global.css).
 interface Props {
   size?: number;
 }
@@ -9,7 +11,8 @@ interface Props {
 const { size = 36 } = Astro.props;
 ---
 
-<svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-  <rect width="32" height="32" rx="6" fill="#2457c5"></rect>
-  <path d="M8 10h16v3h-6.5v11h-3V13H8z" fill="#ffffff"></path>
+<svg class="logo" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+  <rect class="logo-tile" width="32" height="32" rx="5"></rect>
+  <path class="logo-roof" d="M4 16.5 16 6l12 10.5-2.2 2.4L16 10.3l-9.8 8.6z"></path>
+  <path class="logo-key" d="M14.5 17h3v4.2h2.5v2.6h-2.5V26h-3z"></path>
 </svg>

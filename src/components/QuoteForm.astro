@@ -1,0 +1,113 @@
+---
+// The quote request form, type of work first (docs/brief.md): (1) the type of
+// work, (2) the roof, (3) how to reach the visitor and their consent. It is a
+// plain form post with no JavaScript: the steps are three numbered fieldsets
+// on one page, and the browser checks the required fields, showing each error
+// next to its field. The Worker checks everything again (src/lib/quote-form.ts).
+import { localizedPath, t, type Lang } from "../i18n";
+import { quoteForm } from "../lib/quote-form";
+import { pageTexts } from "../texts";
+import Turnstile from "./forms/Turnstile.astro";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const { quote } = pageTexts(lang);
+const { work, roof, contact } = quote;
+const connected = Boolean(quoteForm.action);
+const step = (number: number, legend: string) => `${quote.stepLabel} ${number}: ${legend}`;
+---
+
+<form class="quote-form" method="post" action={quoteForm.action} aria-describedby={connected ? undefined : "form-off"}>
+  <fieldset class="form-step">
+    <legend>{step(1, work.legend)}</legend>
+    <div class="choices">
+      {
+        work.choices.map((choice, index) => (
+          <label class="choice">
+            <input type="radio" name="vrsta_del" value={choice.value} required={index === 0} />
+            <span>{choice.label}</span>
+          </label>
+        ))
+      }
+    </div>
+  </fieldset>
+
+  <fieldset class="form-step">
+    <legend>{step(2, roof.legend)}</legend>
+    <div class="field">
+      <label for="obcina">{roof.municipality}</label>
+      <input id="obcina" name="obcina" type="text" autocomplete="address-level2" required />
+    </div>
+    <div class="field">
+      <label for="povrsina">{roof.area} <span class="optional">({quote.optional})</span></label>
+      <input id="povrsina" name="povrsina" type="number" inputmode="numeric" min="1" max="10000" step="1" aria-describedby="povrsina-hint" />
+      <p class="hint" id="povrsina-hint">{roof.areaHint}</p>
+    </div>
+    <div class="field">
+      <label for="oblika">{roof.roofType}</label>
+      <select id="oblika" name="oblika_strehe" required>
+        <option value="">{quote.choose}</option>
+        {roof.roofTypes.map((choice) => <option value={choice.value}>{choice.label}</option>)}
+      </select>
+    </div>
+    <div class="field">
+      <label for="kritina">{roof.covering}</label>
+      <select id="kritina" name="sedanja_kritina" required>
+        <option value="">{quote.choose}</option>
+        {roof.coverings.map((choice) => <option value={choice.value}>{choice.label}</option>)}
+      </select>
+    </div>
+    <div class="field">
+      <label for="sporocilo">{roof.message} <span class="optional">({quote.optional})</span></label>
+      <textarea id="sporocilo" name="sporocilo" rows="4" maxlength="2000" aria-describedby="sporocilo-hint"></textarea>
+      <p class="hint" id="sporocilo-hint">{roof.messageHint}</p>
+    </div>
+  </fieldset>
+
+  <fieldset class="form-step">
+    <legend>{step(3, contact.legend)}</legend>
+    <div class="field">
+      <label for="ime">{contact.name}</label>
+      <input id="ime" name="ime" type="text" autocomplete="name" required />
+    </div>
+    <p class="hint" id="reach-hint">{contact.reachHint}</p>
+    <div class="field">
+      <label for="telefon">{contact.phone}</label>
+      <input id="telefon" name="telefon" type="tel" autocomplete="tel" aria-describedby="reach-hint" />
+    </div>
+    <div class="field">
+      <label for="eposta">{contact.email}</label>
+      <input id="eposta" name="eposta" type="email" autocomplete="email" aria-describedby="reach-hint" />
+    </div>
+    <fieldset class="field">
+      <legend>{contact.preferred}</legend>
+      <div class="choices choices-inline">
+        {
+          contact.preferredChoices.map((choice, index) => (
+            <label class="choice">
+              <input type="radio" name="nacin_stika" value={choice.value} required={index === 0} />
+              <span>{choice.label}</span>
+            </label>
+          ))
+        }
+      </div>
+    </fieldset>
+    <div class="field consent">
+      <input id="soglasje" name="soglasje" type="checkbox" value="da" required />
+      <label for="soglasje">
+        {contact.consentBefore}<a href={localizedPath(lang, "/privacy")}>{contact.consentLink}</a>{contact.consentAfter}
+      </label>
+    </div>
+  </fieldset>
+
+  <Turnstile siteKey={quoteForm.turnstileSiteKey} action="povprasevanje" theme="light" />
+
+  <div class="form-submit">
+    <button class="button button-large" type="submit" disabled={!connected}>{quote.submit}</button>
+    <p class="hint">{t(lang, "cta.free")}</p>
+    {!connected && <p class="form-off" id="form-off">{quote.notConnected}</p>}
+  </div>
+</form>

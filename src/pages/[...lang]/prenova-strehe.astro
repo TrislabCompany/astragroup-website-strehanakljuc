@@ -1,0 +1,32 @@
+---
+// Prenova strehe: when to renovate, the steps from the inspection to the
+// handover, what is included, the subsidy note and the quote request.
+import Checklist from "../../components/Checklist.astro";
+import PageIntro from "../../components/PageIntro.astro";
+import QuoteCta from "../../components/QuoteCta.astro";
+import RoofLayers from "../../components/RoofLayers.astro";
+import Sources from "../../components/Sources.astro";
+import TextBlocks from "../../components/TextBlocks.astro";
+import Timeline from "../../components/Timeline.astro";
+import { languagePaths, type Lang } from "../../i18n";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SOURCES } from "../../lib/sources";
+import { pageTexts } from "../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { renovation, home } = pageTexts(lang);
+---
+
+<BaseLayout title={renovation.intro.title} description={renovation.intro.description} lang={lang}>
+  <PageIntro intro={renovation.intro} />
+  <TextBlocks blocks={[renovation.when]} />
+  <Timeline lang={lang} id="steps" heading={renovation.stepsHeading} steps={renovation.steps} />
+  <Checklist id="included" heading={renovation.includedHeading} items={renovation.included} />
+  <RoofLayers lang={lang} heading={home.layersHeading} lead={home.layersLead} />
+  <TextBlocks blocks={[renovation.subsidy]}>
+    <Sources lang={lang} sources={[SOURCES.ekosklad]} />
+  </TextBlocks>
+  <QuoteCta lang={lang} />
+</BaseLayout>

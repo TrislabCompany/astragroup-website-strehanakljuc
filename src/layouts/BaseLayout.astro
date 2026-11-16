@@ -2,6 +2,7 @@
 import Analytics from "../components/analytics/Analytics.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import StickyCta from "../components/StickyCta.astro";
 import StructuredData from "../components/StructuredData.astro";
 import SeoHead from "../components/seo/SeoHead.astro";
 import type { ShareImage } from "../components/seo/types";
@@ -40,6 +41,7 @@ const path = unlocalizedPath(Astro.url.pathname);
     <SeoHead title={title} description={description} lang={lang} available={available} noindex={noindex} image={image} />
     <meta name="theme-color" content={site.themeColor} />
     <StructuredData />
+    <slot name="head" />
     {site.analytics && <Analytics />}
   </head>
   <body>
@@ -49,5 +51,6 @@ const path = unlocalizedPath(Astro.url.pathname);
       <slot />
     </main>
     <Footer lang={lang} />
+    <StickyCta lang={lang} path={path} />
   </body>
 </html>

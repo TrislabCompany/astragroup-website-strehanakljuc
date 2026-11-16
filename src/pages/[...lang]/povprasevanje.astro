@@ -1,0 +1,33 @@
+---
+// Povpraševanje: the quote form, what happens next and what helps us make the
+// offer. The form is the site's only way to get in touch.
+import PageIntro from "../../components/PageIntro.astro";
+import QuoteForm from "../../components/QuoteForm.astro";
+import { languagePaths, type Lang } from "../../i18n";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { pageTexts } from "../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { quote } = pageTexts(lang);
+---
+
+<BaseLayout title={quote.intro.title} description={quote.intro.description} lang={lang}>
+  <PageIntro intro={quote.intro} />
+  <section class="band">
+    <div class="wrap quote-layout">
+      <QuoteForm lang={lang} />
+      <aside class="quote-aside" aria-labelledby="quote-next">
+        <h2 id="quote-next">{quote.nextHeading}</h2>
+        <ol class="next-steps next-steps-light">
+          {quote.next.map((item) => <li>{item}</li>)}
+        </ol>
+        <h2>{quote.sendHeading}</h2>
+        <ul class="checklist checklist-compact">
+          {quote.send.map((item) => <li>{item}</li>)}
+        </ul>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

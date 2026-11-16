@@ -8,6 +8,8 @@ const lang = defaultLanguage;
 ---
 
 <BaseLayout title={t(lang, "notFound.title")} lang={lang} available={[lang]} noindex>
-  <h1>{t(lang, "notFound.title")}</h1>
-  <p>{t(lang, "notFound.text")} <a href={localizedPath(lang)}>{t(lang, "notFound.home")}</a>.</p>
+  <div class="wrap page prose">
+    <h1>{t(lang, "notFound.title")}</h1>
+    <p>{t(lang, "notFound.text")} <a href={localizedPath(lang)}>{t(lang, "notFound.home")}</a>.</p>
+  </div>
 </BaseLayout>

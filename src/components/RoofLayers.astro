@@ -1,0 +1,75 @@
+---
+// The roof-layers cross-section: one drawn SVG, the six layers from the
+// structure to the covering, stepped so each layer shows, with a numbered
+// marker per layer. The names and what each layer does are text, in the
+// numbered list next to it; the drawing has its accessible name from
+// src/texts/ (docs/brief.md). Colours come from global.css (.layers-*).
+import type { Lang } from "../i18n";
+import { pageTexts } from "../texts";
+
+interface Props {
+  lang: Lang;
+  heading: string;
+  lead: string;
+}
+
+const { lang, heading, lead } = Astro.props;
+const { layers } = pageTexts(lang);
+// Each layer's right end, from the bottom one up: the stairs leave room for a marker above each.
+const markers = [
+  { x: 570, y: 258 },
+  { x: 510, y: 250 },
+  { x: 450, y: 180 },
+  { x: 390, y: 172 },
+  { x: 330, y: 132 },
+  { x: 270, y: 88 },
+];
+const battens = [52, 102, 152, 202, 252, 302];
+const tiles = [40, 92, 144, 196, 248];
+---
+
+<section class="band band-surface" aria-labelledby="roof-layers">
+  <div class="wrap layers">
+    <div class="layers-text">
+      <h2 id="roof-layers">{heading}</h2>
+      <p class="lead">{lead}</p>
+      <ol class="layers-list">
+        {
+          layers.layers.map((layer) => (
+            <li>
+              <strong>{layer.name}</strong>
+              <span>{layer.text}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+    <figure class="layers-figure">
+      <svg viewBox="0 0 640 360" role="img" aria-labelledby="roof-layers-title">
+        <title id="roof-layers-title">{layers.title}: {layers.layers.map((layer, index) => `${index + 1} ${layer.name}`).join(", ")}</title>
+        <rect class="layers-rafter" x="40" y="280" width="560" height="50" rx="2"></rect>
+        <path class="layers-grain" d="M52 295h520M60 305h500M48 316h536"></path>
+        <rect class="layers-vapour" x="40" y="272" width="500" height="8"></rect>
+        <rect class="layers-insulation" x="40" y="202" width="440" height="70"></rect>
+        <path
+          class="layers-fibre"
+          d="M48 237l14-22 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-22"
+        ></path>
+        <rect class="layers-underlay" x="40" y="194" width="380" height="8"></rect>
+        <rect class="layers-wood" x="40" y="170" width="320" height="24"></rect>
+        {battens.map((x) => <rect class="layers-wood" x={x} y="154" width="22" height="16" />)}
+        {tiles.map((x) => <path class="layers-tile" d={`M${x} 154 l8 -44 h52 l-8 44 z`} />)}
+        {
+          markers.map((marker, index) => (
+            <g class="layers-marker">
+              <circle cx={marker.x} cy={marker.y} r="14" />
+              <text x={marker.x} y={marker.y + 5} text-anchor="middle">
+                {index + 1}
+              </text>
+            </g>
+          ))
+        }
+      </svg>
+    </figure>
+  </div>
+</section>

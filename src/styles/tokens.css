@@ -46,16 +46,30 @@
   line-gap-override: 0%;
 }
 
+/* "The roof over the Karst": slate and copper on warm stone (docs/brief.md).
+   Contrast, WCAG 2 AA:
+   - --text on --background 14.1:1, --muted 4.9:1, --accent-text 4.8:1;
+   - --accent-contrast (white) on --accent 5.5:1;
+   - --on-dark (white) on --dark 11.8:1, --on-dark-muted 9.0:1;
+   - --patina on --dark 4.4:1: only for large numerals and icons (3:1),
+     never for small text and never on the light background. */
 :root {
   --background: #f4f1ec;
   --surface: #ffffff;
-  --surface-strong: #e9ebf0;
-  --border: #d4d8e0;
+  --surface-strong: #eae5dd;
+  --border: #d9d2c7;
   --text: #1d2327;
   --muted: #5e6a70;
   --accent: #a4532a;
+  --accent-strong: #8a4421;
   --accent-text: #a4532a;
   --accent-contrast: #ffffff;
-  --radius: 0.75rem;
+  --dark: #263a45;
+  --dark-strong: #1c2c35;
+  --dark-line: #3d5562;
+  --on-dark: #ffffff;
+  --on-dark-muted: #d9e2e5;
+  --patina: #7fa79b;
+  --radius: 0.5rem;
   --font-family: "Inter Variable", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }

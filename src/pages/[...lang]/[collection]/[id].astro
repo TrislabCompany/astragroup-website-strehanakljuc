@@ -1,6 +1,9 @@
 ---
+// The page of one item of a list: on this site, one question of the FAQ with
+// its answer and sources.
 import { render, type CollectionEntry } from "astro:content";
-import ContactCta from "../../../components/ContactCta.astro";
+import QuoteCta from "../../../components/QuoteCta.astro";
+import Sources from "../../../components/Sources.astro";
 import { seoProps } from "../../../components/seo/fields";
 import { localizedPath, type Lang } from "../../../i18n";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
@@ -19,20 +22,18 @@ const { Content } = await render(entry);
 ---
 
 <BaseLayout {...seoProps(entry.data)} description={entry.data.summary} lang={lang} available={available}>
-  <article class="prose">
-    <p class="eyebrow"><a href={localizedPath(lang, `/${collection}`)}>{settings.title[lang]}</a></p>
-    <h1>{entry.data.title}</h1>
-    <p class="lead">{entry.data.summary}</p>
-    <Content />
-    {
-      entry.data.tags.length > 0 && (
-        <ul class="tags">
-          {entry.data.tags.map((tag) => (
-            <li>{tag}</li>
-          ))}
-        </ul>
-      )
-    }
-  </article>
-  <ContactCta lang={lang} />
+  <section class="page-intro">
+    <div class="wrap">
+      <p class="eyebrow"><a href={localizedPath(lang, `/${collection}`)}>{settings.title[lang]}</a></p>
+      <h1>{entry.data.title}</h1>
+      <p class="lead">{entry.data.summary}</p>
+    </div>
+  </section>
+  <section class="band">
+    <article class="wrap prose">
+      <Content />
+      <Sources lang={lang} sources={entry.data.sources} />
+    </article>
+  </section>
+  <QuoteCta lang={lang} />
 </BaseLayout>

@@ -1,0 +1,22 @@
+---
+// "What is included": a list with a check mark per item, in two columns on a
+// wide screen. The check marks are decoration (CSS); the list carries the meaning.
+interface Props {
+  heading: string;
+  id: string;
+  items: string[];
+  lead?: string;
+}
+
+const { heading, id, items, lead } = Astro.props;
+---
+
+<section class="band" aria-labelledby={id}>
+  <div class="wrap">
+    <h2 id={id}>{heading}</h2>
+    {lead && <p class="lead">{lead}</p>}
+    <ul class="checklist">
+      {items.map((item) => <li>{item}</li>)}
+    </ul>
+  </div>
+</section>

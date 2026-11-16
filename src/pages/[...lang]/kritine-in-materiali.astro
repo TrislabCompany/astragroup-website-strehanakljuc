@@ -1,0 +1,51 @@
+---
+// Kritine in materiali: the coverings compared, with pros, cons and the
+// roof pitch each needs.
+import PageIntro from "../../components/PageIntro.astro";
+import QuoteCta from "../../components/QuoteCta.astro";
+import TextBlocks from "../../components/TextBlocks.astro";
+import { languagePaths, type Lang } from "../../i18n";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { pageTexts } from "../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { coverings } = pageTexts(lang);
+---
+
+<BaseLayout title={coverings.intro.title} description={coverings.intro.description} lang={lang}>
+  <PageIntro intro={coverings.intro} />
+  <section class="band">
+    <div class="wrap">
+      <ul class="coverings">
+        {
+          coverings.items.map((covering) => (
+            <li class="covering">
+              <h2>{covering.name}</h2>
+              <p>{covering.summary}</p>
+              <h3>{coverings.prosLabel}</h3>
+              <ul class="pros">
+                {covering.pros.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+              <h3>{coverings.consLabel}</h3>
+              <ul class="cons">
+                {covering.cons.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+              <p class="pitch">
+                <strong>{coverings.pitchLabel}:</strong> {covering.pitch}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="note">{coverings.pitchNote}</p>
+    </div>
+  </section>
+  <TextBlocks blocks={[coverings.choosing]} />
+  <QuoteCta lang={lang} />
+</BaseLayout>

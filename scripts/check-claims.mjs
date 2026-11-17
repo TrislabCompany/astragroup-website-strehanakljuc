@@ -10,7 +10,11 @@
 //    Content-Security-Policy's connect-src in public/_headers must allow its
 //    endpoint, and the privacy policy of every language must name the provider
 //    ("Plausible", or "Cloudflare Web Analytics", whose beacon script's origin
-//    script-src must allow too).
+//    script-src must allow too). A page with a form (src/components/forms/
+//    FormEndpoint.astro, docs/forms.md) also runs that component's script,
+//    and only there; then public/_headers must have a rule for the page's own
+//    path whose Content-Security-Policy lets Turnstile load (script-src and
+//    frame-src allow https://challenges.cloudflare.com).
 // 2. The published footprint (sustainability page, every language): the
 //    average page weight and the CO2e per page view must match the build,
 //    within the rounding the page uses. When the check fails, update the
@@ -56,10 +60,44 @@ export const PROVIDER_NAMES = { plausible: "Plausible", cloudflare: "Cloudflare 
 
 const ANALYTICS_SCRIPT = /\bsrc="\/_astro\/Analytics\.astro_[^"]*"/;
 
-/** The scripts a production page runs that no claim allows: all but JSON-LD, and the analytics script when the page has analytics. */
+const FORM_SCRIPT = /\bsrc="\/_astro\/FormEndpoint\.astro_[^"]*"/;
+/** Turnstile's origin: its script and its frame. */
+export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
+
+/** Whether a page has a form connected by FormEndpoint.astro. */
+export function hasForm(html) {
+  return /\bdata-form-endpoint=/.test(html);
+}
+
+/** The scripts a production page runs that no claim allows: all but JSON-LD, the analytics script when the page has analytics, and the form script when the page has a form. */
 export function unexpectedScripts(html) {
   const analytics = analyticsEndpoint(html) !== undefined;
-  return scriptsIn(html).filter((tag) => !(analytics && ANALYTICS_SCRIPT.test(tag)));
+  const form = hasForm(html);
+  return scriptsIn(html).filter((tag) => !(analytics && ANALYTICS_SCRIPT.test(tag)) && !(form && FORM_SCRIPT.test(tag)));
+}
+
+/** The Content-Security-Policy of the rule for exactly `path` in a _headers file, or undefined. */
+export function pathPolicy(headers, path) {
+  let current;
+  let policy;
+  for (const line of headers.split(/\r?\n/)) {
+    if (/^\S/.test(line) && !line.startsWith("#")) current = line.trim();
+    const value = line.match(/^\s+Content-Security-Policy:\s*(.+)$/i)?.[1];
+    if (value !== undefined && current === path) policy = value;
+  }
+  return policy;
+}
+
+/** The sources one directive of a Content-Security-Policy allows. */
+export function policySources(policy, name) {
+  const directive = (policy ?? "").split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name} `));
+  return directive ? directive.split(/\s+/).slice(1) : [];
+}
+
+/** The address Cloudflare Pages serves a built page at: about.html is /about, index.html is /. */
+export function pagePath(relative) {
+  const path = `/${relative.replaceAll("\\", "/").replace(/^\/+/, "")}`.replace(/\.html$/, "");
+  return path === "/index" ? "/" : path.replace(/\/index$/, "");
 }
 
 /** The sources a Content-Security-Policy directive allows in a _headers file, for the rule of every path (/*). */
@@ -92,15 +130,31 @@ async function main() {
   const endpoints = new Set();
   const beacons = new Set();
   const providers = new Set();
+  const formPages = [];
   for (const file of files) {
     const html = withoutBadge(await readFile(file, "utf8"));
     const scripts = unexpectedScripts(html);
     if (scripts.length > 0) failures.push(`${file.slice(dist.length)} runs a script in production: ${scripts[0]}`);
     const endpoint = analyticsEndpoint(html);
     if (endpoint) endpoints.add(endpoint);
+    if (hasForm(html)) formPages.push(pagePath(file.slice(dist.length)));
     const analytics = analyticsOf(html);
     if (analytics?.provider) providers.add(analytics.provider);
     if (analytics?.beacon) beacons.add(analytics.beacon);
+  }
+
+  if (formPages.length > 0) {
+    const headers = await readFile(join(rootDir, "public", "_headers"), "utf8");
+    for (const path of formPages) {
+      const policy = pathPolicy(headers, path);
+      if (policy === undefined) {
+        failures.push(`${path} has a form, but public/_headers has no Content-Security-Policy rule for ${path} (docs/forms.md, section 3)`);
+        continue;
+      }
+      for (const directive of ["script-src", "frame-src"]) {
+        if (!policySources(policy, directive).includes(TURNSTILE_ORIGIN)) failures.push(`${directive} of the rule for ${path} in public/_headers doesn't allow ${TURNSTILE_ORIGIN}, so Turnstile can't load`);
+      }
+    }
   }
 
   const legal = join(rootDir, "src", "content", "legal");
@@ -146,7 +200,7 @@ async function main() {
     process.exit(1);
   }
   console.log(
-    `claims: ok. ${files.length} pages run ${endpoints.size > 0 ? "only the analytics script, allowed in connect-src and named in the privacy policy," : "no JavaScript"} in production; ${builtKb.toFixed(1)} KB and ${builtGrams.toFixed(4)} g CO2e per view match the sustainability page.`,
+    `claims: ok. ${files.length} pages run ${endpoints.size > 0 ? "only the analytics script, allowed in connect-src and named in the privacy policy," : "no JavaScript"} in production${formPages.length > 0 ? `, except the form script on ${formPages.join(", ")}, with its own Content-Security-Policy` : ""}; ${builtKb.toFixed(1)} KB and ${builtGrams.toFixed(4)} g CO2e per view match the sustainability page.`,
   );
 }
 

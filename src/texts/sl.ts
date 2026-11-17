@@ -373,7 +373,7 @@ const sl: PageTexts = {
     optional: "neobvezno",
     choose: "Izberite",
     submit: "Pošlji povpraševanje",
-    notConnected: "Pošiljanje obrazca bo vklopljeno, preden bo stran javno objavljena.",
+    needsJavaScript: "Za pošiljanje obrazca vklopite JavaScript v brskalniku.",
     nextHeading: "Kaj sledi",
     next: [
       "Preberemo vaše povpraševanje in se oglasimo na način, ki ste ga izbrali.",

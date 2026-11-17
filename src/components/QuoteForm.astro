@@ -1,13 +1,15 @@
 ---
 // The quote request form, type of work first (docs/brief.md): (1) the type of
 // work, (2) the roof, (3) how to reach the visitor and their consent. It is a
-// plain form post with no JavaScript: the steps are three numbered fieldsets
-// on one page, and the browser checks the required fields, showing each error
-// next to its field. The Worker checks everything again (src/lib/quote-form.ts).
+// plain form post: the steps are three numbered fieldsets on one page, and the
+// browser checks the required fields, showing each error next to its field.
+// The Worker checks everything again (src/lib/quote-form.ts). The form's
+// address and Turnstile come from /config.json (forms/FormEndpoint.astro),
+// which switches the button on; without JavaScript it stays off.
 import { localizedPath, t, type Lang } from "../i18n";
 import { quoteForm } from "../lib/quote-form";
 import { pageTexts } from "../texts";
-import Turnstile from "./forms/Turnstile.astro";
+import FormEndpoint from "./forms/FormEndpoint.astro";
 
 interface Props {
   lang: Lang;
@@ -16,11 +18,10 @@ interface Props {
 const { lang } = Astro.props;
 const { quote } = pageTexts(lang);
 const { work, roof, contact } = quote;
-const connected = Boolean(quoteForm.action);
 const step = (number: number, legend: string) => `${quote.stepLabel} ${number}: ${legend}`;
 ---
 
-<form class="quote-form" method="post" action={quoteForm.action} aria-describedby={connected ? undefined : "form-off"}>
+<form class="quote-form" method="post">
   <fieldset class="form-step">
     <legend>{step(1, work.legend)}</legend>
     <div class="choices">
@@ -103,11 +104,11 @@ const step = (number: number, legend: string) => `${quote.stepLabel} ${number}: 
     </div>
   </fieldset>
 
-  <Turnstile siteKey={quoteForm.turnstileSiteKey} action="povprasevanje" theme="light" />
+  <FormEndpoint formId={quoteForm.formId} action="povprasevanje" theme="light" />
 
   <div class="form-submit">
-    <button class="button button-large" type="submit" disabled={!connected}>{quote.submit}</button>
+    <button class="button button-large" type="submit" disabled>{quote.submit}</button>
     <p class="hint">{t(lang, "cta.free")}</p>
-    {!connected && <p class="form-off" id="form-off">{quote.notConnected}</p>}
+    <noscript><p class="form-off">{quote.needsJavaScript}</p></noscript>
   </div>
 </form>

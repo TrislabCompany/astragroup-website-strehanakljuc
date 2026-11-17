@@ -145,7 +145,7 @@ export interface PageTexts {
     optional: string;
     choose: string;
     submit: string;
-    notConnected: string;
+    needsJavaScript: string;
     nextHeading: string;
     next: string[];
     sendHeading: string;

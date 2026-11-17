@@ -50,3 +50,19 @@ How rules combine (see the comment at the top of `public/_headers`): rules with 
 - **The privacy policy** of every language names Cloudflare as the processor of the challenge, and says that the form's data goes to the form endpoint.
 - **The template's claims** are about a site without a form: "no JavaScript" and no third-party requests (`scripts/check-claims.mjs`, `scripts/check-browser.mjs`, the sustainability page and the accessibility statement). A site that adds a form with Turnstile reviews those statements and adapts the checks for the form page; the template does not do it for it.
 - **Accessibility:** test the form with a keyboard and a screen reader, widget included.
+
+## 5. This site's quote form
+
+The quote request form (`/povprasevanje`, `src/components/QuoteForm.astro`) is connected by `src/components/forms/FormEndpoint.astro`, not by a site key written into the page. Each Environment has its own form Worker and Turnstile widget, but staging and production run the same build, so both values are read in the browser from `/config.json`:
+
+| Setting | dev | staging | production |
+| --- | --- | --- | --- |
+| `PUBLIC_FORMS_URL` | `https://forms-dev.trislab.com` | `https://forms-staging.trislab.com` | `https://forms.trislab.com` |
+| `PUBLIC_TURNSTILE_SITE_KEY` | the dev widget's key | the staging widget's key | the production widget's key |
+
+They are variables of the GitHub Environments, set by tl-cloud-infrastructure. The form posts to `${PUBLIC_FORMS_URL}/f/strehanakljuc-povprasevanje` (the id is in `src/lib/quote-form.ts`). With both settings the component sets the form's address, shows the Turnstile widget and switches the submit button on. Without them (`pnpm dev`, the checks) the button stays off, and without JavaScript a note says it is needed.
+
+- **Headers:** `public/_headers` has a rule for `/povprasevanje` that takes the `/*` policy off (`! Content-Security-Policy`) and sets its own, allowing Turnstile and the three Worker origins in `form-action`.
+- **Claims:** `scripts/check-claims.mjs` allows the component's script only on a page with the form, and fails when that page has no rule of its own in `public/_headers` letting Turnstile load. The accessibility statement says sending the form needs JavaScript.
+- **Template:** `FormEndpoint.astro` is in the `shared` folder `src/components/forms/`. It belongs in the template too, so that the next update doesn't conflict with it.
+

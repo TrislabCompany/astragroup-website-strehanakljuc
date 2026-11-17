@@ -18,6 +18,13 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
+# The quote request form (docs/forms.md, section 3): Turnstile's script and
+# frame, and the form Worker of each Environment in form-action. The rule
+# takes the policy of /* off first, so the page gets this one policy only.
+/povprasevanje
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self' https://forms-dev.trislab.com https://forms-staging.trislab.com https://forms.trislab.com; frame-ancestors 'none'
+
 # Hashed assets never change: the browser keeps them for a year.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable

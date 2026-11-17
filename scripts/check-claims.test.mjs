@@ -2,7 +2,7 @@
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { analyticsEndpoint, analyticsOf, connectSources, directiveSources, publishedFigures, scriptsIn, unexpectedScripts } from "./check-claims.mjs";
+import { analyticsEndpoint, analyticsOf, connectSources, directiveSources, pagePath, pathPolicy, policySources, publishedFigures, scriptsIn, unexpectedScripts } from "./check-claims.mjs";
 
 test("JSON-LD is data, every other script counts", () => {
   assert.deepEqual(scriptsIn('<script type="application/ld+json">{}</script><p>x</p>'), []);
@@ -46,4 +46,33 @@ test("reads script-src and connect-src from the headers file", () => {
   assert.deepEqual(directiveSources(headers, "script-src"), ["'self'", "https://static.cloudflareinsights.com"]);
   assert.deepEqual(connectSources(headers), ["'self'", "https://cloudflareinsights.com"]);
   assert.deepEqual(directiveSources("/*\n  X-Frame-Options: DENY\n", "script-src"), []);
+});
+
+test("the form script is allowed only on a page with a form", () => {
+  const widget = '<div class="cf-turnstile" data-form-endpoint="contact" hidden></div>';
+  const script = '<script type="module" src="/_astro/FormEndpoint.astro_astro_type_script_index_0_lang.abc.js"></script>';
+  assert.deepEqual(unexpectedScripts(widget + script), []);
+  assert.equal(unexpectedScripts(script).length, 1);
+  assert.equal(unexpectedScripts(widget + script + '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>').length, 1);
+});
+
+test("reads the Content-Security-Policy of one path's own rule", () => {
+  const headers = [
+    "# comment",
+    "/*",
+    "  Content-Security-Policy: default-src 'self'",
+    "",
+    "/contact",
+    "  ! Content-Security-Policy",
+    "  Content-Security-Policy: script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com",
+  ].join("\n");
+  assert.equal(pathPolicy(headers, "/*"), "default-src 'self'");
+  assert.deepEqual(policySources(pathPolicy(headers, "/contact"), "frame-src"), ["https://challenges.cloudflare.com"]);
+  assert.equal(pathPolicy(headers, "/about"), undefined);
+});
+
+test("a built page's address", () => {
+  assert.equal(pagePath("/index.html"), "/");
+  assert.equal(pagePath("/povprasevanje.html"), "/povprasevanje");
+  assert.equal(pagePath("\\en\\contact.html"), "/en/contact");
 });

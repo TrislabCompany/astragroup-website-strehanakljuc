@@ -736,15 +736,40 @@ main {
   stroke-width: 2;
 }
 
-.layers-marker circle {
-  fill: var(--dark);
+/* The numbered markers over the drawing: HTML, so the contrast can be checked.
+   Each sits at a layer's right end, in the SVG's 640 x 360 viewBox as percent. */
+.layers-figure {
+  position: relative;
+  container-type: inline-size;
 }
 
-.layers-marker text {
-  fill: var(--on-dark);
-  font-size: 15px;
-  font-weight: 700;
+.layers-markers {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
+
+.layers-marker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 4.375%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--dark);
+  color: var(--on-dark);
+  font-size: max(0.625rem, 2.4cqi);
+  font-weight: 700;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+
+.layers-marker-1 { left: 89.0625%; top: 71.6667%; }
+.layers-marker-2 { left: 79.6875%; top: 69.4444%; }
+.layers-marker-3 { left: 70.3125%; top: 50%; }
+.layers-marker-4 { left: 60.9375%; top: 47.7778%; }
+.layers-marker-5 { left: 51.5625%; top: 36.6667%; }
+.layers-marker-6 { left: 42.1875%; top: 24.4444%; }
 
 /* The coverings comparison: one card per covering. */
 

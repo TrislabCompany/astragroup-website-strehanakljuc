@@ -15,15 +15,9 @@ interface Props {
 
 const { lang, heading, lead } = Astro.props;
 const { layers } = pageTexts(lang);
-// Each layer's right end, from the bottom one up: the stairs leave room for a marker above each.
-const markers = [
-  { x: 570, y: 258 },
-  { x: 510, y: 250 },
-  { x: 450, y: 180 },
-  { x: 390, y: 172 },
-  { x: 330, y: 132 },
-  { x: 270, y: 88 },
-];
+// The numbered markers are HTML laid over the drawing (.layers-marker-N in
+// global.css places each at a layer's right end), not SVG text: axe can't
+// measure the contrast of SVG text, and pa11y fails on that.
 const battens = [52, 102, 152, 202, 252, 302];
 const tiles = [40, 92, 144, 196, 248];
 ---
@@ -59,17 +53,10 @@ const tiles = [40, 92, 144, 196, 248];
         <rect class="layers-wood" x="40" y="170" width="320" height="24"></rect>
         {battens.map((x) => <rect class="layers-wood" x={x} y="154" width="22" height="16" />)}
         {tiles.map((x) => <path class="layers-tile" d={`M${x} 154 l8 -44 h52 l-8 44 z`} />)}
-        {
-          markers.map((marker, index) => (
-            <g class="layers-marker">
-              <circle cx={marker.x} cy={marker.y} r="14" />
-              <text x={marker.x} y={marker.y + 5} text-anchor="middle">
-                {index + 1}
-              </text>
-            </g>
-          ))
-        }
       </svg>
+      <ol class="layers-markers" aria-hidden="true">
+        {layers.layers.map((_, index) => <li class={`layers-marker layers-marker-${index + 1}`}>{index + 1}</li>)}
+      </ol>
     </figure>
   </div>
 </section>

@@ -10,11 +10,14 @@
 //    Content-Security-Policy's connect-src in public/_headers must allow its
 //    endpoint, and the privacy policy of every language must name the provider
 //    ("Plausible", or "Cloudflare Web Analytics", whose beacon script's origin
-//    script-src must allow too). A page with a form (src/components/forms/
-//    FormEndpoint.astro, docs/forms.md) also runs that component's script,
-//    and only there; then public/_headers must have a rule for the page's own
-//    path whose Content-Security-Policy lets Turnstile load (script-src and
-//    frame-src allow https://challenges.cloudflare.com).
+//    script-src must allow too). The quote form page (/povprasevanje) also runs
+//    QuoteForm.astro's script, which adds Cloudflare Turnstile and points the
+//    form at the Environment's form Worker (docs/forms.md). Only a page with
+//    the form may run it; then public/_headers must have a rule for that
+//    page's own path whose Content-Security-Policy allows Turnstile in
+//    script-src and frame-src and every Worker (FORMS_ORIGINS in
+//    src/lib/quote-form.ts) in form-action, and the privacy policy of every
+//    language must name Turnstile.
 // 2. The published footprint (sustainability page, every language): the
 //    average page weight and the CO2e per page view must match the build,
 //    within the rounding the page uses. When the check fails, update the
@@ -60,16 +63,33 @@ export const PROVIDER_NAMES = { plausible: "Plausible", cloudflare: "Cloudflare 
 
 const ANALYTICS_SCRIPT = /\bsrc="\/_astro\/Analytics\.astro_[^"]*"/;
 
-const FORM_SCRIPT = /\bsrc="\/_astro\/FormEndpoint\.astro_[^"]*"/;
-/** Turnstile's origin: its script and its frame. */
+const FORM_SCRIPT = /\bsrc="\/_astro\/QuoteForm\.astro_[^"]*"/;
+/** The origin Turnstile loads its script and its frame from. */
 export const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
 
-/** Whether a page has a form connected by FormEndpoint.astro. */
+/** Whether a page has the quote form (src/components/QuoteForm.astro). */
 export function hasForm(html) {
-  return /\bdata-form-endpoint=/.test(html);
+  return /<form\b[^>]*\bdata-quote-form\b/.test(html);
 }
 
-/** The scripts a production page runs that no claim allows: all but JSON-LD, the analytics script when the page has analytics, and the form script when the page has a form. */
+/** The form Workers' origins, as FORMS_ORIGINS in src/lib/quote-form.ts lists them. */
+export function formsOrigins(source) {
+  const list = source.match(/FORMS_ORIGINS\s*=\s*\[([^\]]*)\]/)?.[1] ?? "";
+  return [...list.matchAll(/"([^"]+)"/g)].map(([, origin]) => origin);
+}
+
+/** What a page's Content-Security-Policy must allow for the quote form, one line per gap; `workers` are the form Workers' origins. */
+export function formPolicyGaps(policy, workers) {
+  const gaps = [];
+  for (const directive of ["script-src", "frame-src"]) {
+    if (!policySources(policy, directive).includes(TURNSTILE_ORIGIN)) gaps.push(`${directive} doesn't allow ${TURNSTILE_ORIGIN}`);
+  }
+  const formAction = policySources(policy, "form-action");
+  for (const worker of workers) if (!formAction.includes(worker)) gaps.push(`form-action doesn't allow ${worker}`);
+  return gaps;
+}
+
+/** The scripts a production page runs that no claim allows: all but JSON-LD, the analytics script when the page has analytics, and the quote form's script when the page has the form. */
 export function unexpectedScripts(html) {
   const analytics = analyticsEndpoint(html) !== undefined;
   const form = hasForm(html);
@@ -143,21 +163,24 @@ async function main() {
     if (analytics?.beacon) beacons.add(analytics.beacon);
   }
 
+  const legal = join(rootDir, "src", "content", "legal");
   if (formPages.length > 0) {
     const headers = await readFile(join(rootDir, "public", "_headers"), "utf8");
+    const workers = formsOrigins(await readFile(join(rootDir, "src", "lib", "quote-form.ts"), "utf8"));
+    if (workers.length === 0) failures.push("src/lib/quote-form.ts lists no FORMS_ORIGINS; list the form Workers' origins there");
     for (const path of formPages) {
       const policy = pathPolicy(headers, path);
       if (policy === undefined) {
-        failures.push(`${path} has a form, but public/_headers has no Content-Security-Policy rule for ${path} (docs/forms.md, section 3)`);
+        failures.push(`${path} has the quote form, but public/_headers has no Content-Security-Policy rule for ${path}; add one (docs/forms.md, section 3)`);
         continue;
       }
-      for (const directive of ["script-src", "frame-src"]) {
-        if (!policySources(policy, directive).includes(TURNSTILE_ORIGIN)) failures.push(`${directive} of the rule for ${path} in public/_headers doesn't allow ${TURNSTILE_ORIGIN}, so Turnstile can't load`);
-      }
+      for (const gap of formPolicyGaps(policy, workers)) failures.push(`the quote form needs it, but the rule for ${path} in public/_headers: ${gap}; add it there (docs/forms.md)`);
+    }
+    for (const lang of await readdir(legal)) {
+      const text = await readFile(join(legal, lang, "privacy.md"), "utf8").catch(() => undefined);
+      if (text !== undefined && !text.includes("Turnstile")) failures.push(`${lang}/privacy.md doesn't name Cloudflare Turnstile, which checks the quote form (docs/forms.md)`);
     }
   }
-
-  const legal = join(rootDir, "src", "content", "legal");
   if (endpoints.size > 0) {
     const headers = await readFile(join(rootDir, "public", "_headers"), "utf8");
     const allowed = connectSources(headers);
@@ -200,7 +223,7 @@ async function main() {
     process.exit(1);
   }
   console.log(
-    `claims: ok. ${files.length} pages run ${endpoints.size > 0 ? "only the analytics script, allowed in connect-src and named in the privacy policy," : "no JavaScript"} in production${formPages.length > 0 ? `, except the form script on ${formPages.join(", ")}, with its own Content-Security-Policy` : ""}; ${builtKb.toFixed(1)} KB and ${builtGrams.toFixed(4)} g CO2e per view match the sustainability page.`,
+    `claims: ok. ${files.length} pages run ${endpoints.size > 0 ? "only the analytics script, allowed in connect-src and named in the privacy policy," : "no JavaScript"} in production${formPages.length > 0 ? `, except the quote form's script on ${formPages.join(", ")}, with its own Content-Security-Policy allowing Turnstile and the form Workers, and Turnstile named` : ""}; ${builtKb.toFixed(1)} KB and ${builtGrams.toFixed(4)} g CO2e per view match the sustainability page.`,
   );
 }
 

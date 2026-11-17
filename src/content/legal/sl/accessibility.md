@@ -6,7 +6,8 @@ description: Kako dostopna je ta stran, kako je to preverjeno in kako sporočiti
 ## Raven dostopnosti
 
 Stran je narejena po smernicah WCAG 2.1, raven AA.
-Deluje brez JavaScripta, razen pošiljanja obrazca za povpraševanje, ne nastavlja piškotkov in jo je mogoče uporabljati samo s tipkovnico.
+Deluje brez JavaScripta, ne nastavlja piškotkov in jo je mogoče uporabljati samo s tipkovnico.
+JavaScript potrebuje le obrazec za povpraševanje: z njim Cloudflare Turnstile pred pošiljanjem preveri, da obrazec pošilja človek.
 Besedilo se ob povečavi in na zaslonu, širokem 320 pikslov, prelomi, ne da bi se stran pomikala vstran.
 
 ## Kako je preverjeno

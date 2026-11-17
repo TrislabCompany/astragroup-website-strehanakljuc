@@ -53,16 +53,14 @@ How rules combine (see the comment at the top of `public/_headers`): rules with 
 
 ## 5. This site's quote form
 
-The quote request form (`/povprasevanje`, `src/components/QuoteForm.astro`) is connected by `src/components/forms/FormEndpoint.astro`, not by a site key written into the page. Each Environment has its own form Worker and Turnstile widget, but staging and production run the same build, so both values are read in the browser from `/config.json`:
+The quote request form (`/povprasevanje`, `src/components/QuoteForm.astro`) is the same as fasadanakljuc.si's. Each Environment has its own form Worker and Turnstile widget, but staging and production run the same build, so the page reads both values in the browser from `/config.json`:
 
 | Setting | dev | staging | production |
 | --- | --- | --- | --- |
 | `PUBLIC_FORMS_URL` | `https://forms-dev.trislab.com` | `https://forms-staging.trislab.com` | `https://forms.trislab.com` |
 | `PUBLIC_TURNSTILE_SITE_KEY` | the dev widget's key | the staging widget's key | the production widget's key |
 
-They are variables of the GitHub Environments, set by tl-cloud-infrastructure. The form posts to `${PUBLIC_FORMS_URL}/f/strehanakljuc-povprasevanje` (the id is in `src/lib/quote-form.ts`). With both settings the component sets the form's address, shows the Turnstile widget and switches the submit button on. Without them (`pnpm dev`, the checks) the button stays off, and without JavaScript a note says it is needed.
+They are variables of the GitHub Environments, set by tl-cloud-infrastructure. `formTarget` in `src/lib/quote-form.ts` turns them into the form's address, `${PUBLIC_FORMS_URL}/f/strehanakljuc-povprasevanje`, and accepts only the origins in `FORMS_ORIGINS`. With a target, the form's script sets the address, adds the Turnstile widget, switches the button on and removes the note under it. Without one (a setting missing, an unknown origin, `pnpm dev`, the checks) or without JavaScript, the button stays off and the note says JavaScript is needed.
 
-- **Headers:** `public/_headers` has a rule for `/povprasevanje` that takes the `/*` policy off (`! Content-Security-Policy`) and sets its own, allowing Turnstile and the three Worker origins in `form-action`.
-- **Claims:** `scripts/check-claims.mjs` allows the component's script only on a page with the form, and fails when that page has no rule of its own in `public/_headers` letting Turnstile load. The accessibility statement says sending the form needs JavaScript.
-- **Template:** `FormEndpoint.astro` is in the `shared` folder `src/components/forms/`. It belongs in the template too, so that the next update doesn't conflict with it.
-
+- **Headers:** `public/_headers` has a rule for `/povprasevanje` that takes the `/*` policy off (`! Content-Security-Policy`) and sets its own, allowing Turnstile in `script-src` and `frame-src` and the three Workers in `form-action`. Every other page keeps the strict policy.
+- **Claims:** `scripts/check-claims.mjs` allows the form's script only on a page with the form, and fails when that page has no rule of its own in `public/_headers`, when the rule doesn't allow Turnstile or a Worker of `FORMS_ORIGINS`, or when a privacy policy doesn't name Turnstile. The accessibility statement says only the form needs JavaScript.

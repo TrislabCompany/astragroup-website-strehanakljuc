@@ -1,0 +1,21 @@
+---
+// The top of a page of the site's own design: the line above the title, the
+// title (the page's only h1) and the lead, on the stone background. A slot
+// after the lead takes the page's buttons.
+import type { PageIntro as Intro } from "../texts";
+
+interface Props {
+  intro: Intro;
+}
+
+const { intro } = Astro.props;
+---
+
+<section class="page-intro">
+  <div class="wrap">
+    <p class="eyebrow">{intro.eyebrow}</p>
+    <h1>{intro.title}</h1>
+    <p class="lead">{intro.lead}</p>
+    <slot />
+  </div>
+</section>

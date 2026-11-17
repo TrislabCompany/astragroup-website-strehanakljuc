@@ -15,6 +15,7 @@ const firstTopic = contact.topics[0];
 ---
 
 <BaseLayout title={t(lang, "legal.imprint")} lang={lang}>
+  <div class="wrap page prose">
   <h1>{t(lang, "legal.imprint")}</h1>
   <dl class="imprint">
     <dt>{t(lang, "imprint.company")}</dt>
@@ -49,4 +50,14 @@ const firstTopic = contact.topics[0];
     }
   </dl>
   {company.imprintNotes?.map((note) => <p>{note[lang]}</p>)}
+  {
+    contact.mapUrl && (
+      <p>
+        <a href={contact.mapUrl} rel="noopener noreferrer">
+          {t(lang, "footer.map")}
+        </a>
+      </p>
+    )
+  }
+  </div>
 </BaseLayout>

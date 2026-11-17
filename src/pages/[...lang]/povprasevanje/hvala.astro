@@ -1,0 +1,25 @@
+---
+// The thank-you page the form Worker sends the visitor to after a request
+// (src/lib/quote-form.ts). Out of search: it only makes sense after the form.
+import PageIntro from "../../../components/PageIntro.astro";
+import { languagePaths, localizedPath, t, type Lang } from "../../../i18n";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { pageTexts } from "../../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { thanks } = pageTexts(lang);
+---
+
+<BaseLayout title={thanks.intro.title} description={thanks.intro.description} lang={lang} noindex>
+  <PageIntro intro={thanks.intro} />
+  <section class="band">
+    <div class="wrap prose">
+      <ol class="next-steps next-steps-light">
+        {thanks.next.map((item) => <li>{item}</li>)}
+      </ol>
+      <p><a href={localizedPath(lang)}>{t(lang, "notFound.home")}</a></p>
+    </div>
+  </section>
+</BaseLayout>

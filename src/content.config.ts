@@ -22,6 +22,18 @@ const pogostaVprasanja = defineCollection({
       /** Position in lists, lowest first. */
       order: z.number().int(),
       tags: z.array(z.string()).default([]),
+      /** Where a fact in the answer comes from, and the day it was checked (docs/brief.md). */
+      sources: z
+        .array(
+          z.object({
+            title: z.string().min(1),
+            /** An https address. */
+            url: z.string().regex(/^https:\/\/\S+$/),
+            /** YYYY-MM-DD */
+            checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          }),
+        )
+        .default([]),
       ...seoFields(image),
     }),
 });

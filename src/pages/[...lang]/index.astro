@@ -1,46 +1,38 @@
 ---
-import ContactCta from "../../components/ContactCta.astro";
-import ItemCard from "../../components/ItemCard.astro";
-import { languagePaths, localizedPath, t, type Lang } from "../../i18n";
+// The home page, top to bottom (docs/brief.md): the hero with the two
+// journeys, the steps in short, what is included, the roof layers and the
+// quote request.
+import Checklist from "../../components/Checklist.astro";
+import HeroRoof from "../../components/HeroRoof.astro";
+import JourneyChooser from "../../components/JourneyChooser.astro";
+import QuoteCta from "../../components/QuoteCta.astro";
+import RoofLayers from "../../components/RoofLayers.astro";
+import Timeline from "../../components/Timeline.astro";
+import { languagePaths, type Lang } from "../../i18n";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { sortedItems, type ItemCollection } from "../../lib/items";
 import site from "../../site.config";
+import { pageTexts } from "../../texts";
 
 export const getStaticPaths = languagePaths;
 
 const { lang } = Astro.props as { lang: Lang };
-// A section for every list of items marked home in src/site.config.ts.
-const sections = await Promise.all(
-  site.collections
-    .filter((collection) => collection.home)
-    .map(async (collection) => ({ ...collection, items: await sortedItems(collection.id as ItemCollection, lang) })),
-);
+const { home } = pageTexts(lang);
 ---
 
-<BaseLayout title={site.name} lang={lang}>
+<BaseLayout title={site.name} description={home.intro.description} lang={lang}>
   <section class="hero">
-    <h1>{site.name}</h1>
-    <p class="lead">{site.description[lang]}</p>
-    <div class="actions">
-      <a class="button" href={localizedPath(lang, "/contact")}>{t(lang, "cta.contact")}</a>
+    <div class="wrap hero-row">
+      <div class="hero-text">
+        <p class="eyebrow">{home.intro.eyebrow}</p>
+        <h1>{home.intro.title}</h1>
+        <p class="lead">{home.intro.lead}</p>
+        <JourneyChooser lang={lang} flatRoofLabel={home.flatRoofLink} />
+      </div>
+      <HeroRoof />
     </div>
   </section>
-
-  {
-    sections.map((section) => (
-      <section class="section" aria-labelledby={section.id}>
-        <h2 id={section.id}>
-          <a href={localizedPath(lang, `/${section.id}`)}>{section.title[lang]}</a>
-        </h2>
-        <p class="lead">{section.lead[lang]}</p>
-        <ul class="grid">
-          {section.items.map((entry) => (
-            <ItemCard entry={entry} collection={section.id as ItemCollection} lang={lang} />
-          ))}
-        </ul>
-      </section>
-    ))
-  }
-
-  <ContactCta lang={lang} />
+  <Timeline lang={lang} id="steps" heading={home.stepsHeading} lead={home.stepsLead} steps={home.steps} />
+  <Checklist id="included" heading={home.includedHeading} lead={home.includedLead} items={home.included} />
+  <RoofLayers lang={lang} heading={home.layersHeading} lead={home.layersLead} />
+  <QuoteCta lang={lang} />
 </BaseLayout>

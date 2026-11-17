@@ -1,0 +1,24 @@
+---
+// The enquiry button that stays at the bottom of the screen on a phone
+// (docs/brief.md). Hidden on wider screens, where the header's button is in
+// view, and left out on the quote request page itself.
+import { localizedPath, t, type Lang } from "../i18n";
+import { isCurrent, QUOTE_PATH } from "../lib/navigation";
+
+interface Props {
+  lang: Lang;
+  path: string;
+}
+
+const { lang, path } = Astro.props;
+---
+
+{
+  !isCurrent(path, QUOTE_PATH) && (
+    <aside class="sticky-cta" aria-label={t(lang, "nav.quote")}>
+      <a class="button" href={localizedPath(lang, QUOTE_PATH)}>
+        {t(lang, "cta.quote")}
+      </a>
+    </aside>
+  )
+}

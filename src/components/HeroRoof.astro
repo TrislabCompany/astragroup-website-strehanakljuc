@@ -1,0 +1,25 @@
+---
+// The home page's drawing: a tiled roof over the low hills of the Karst, in
+// slate, copper and stone. Decoration only, so it is hidden from assistive
+// technology; the hero's text carries the meaning. Colours come from
+// global.css (.hero-*). It stands in until a licensed stock photo is chosen
+// (docs/brief.md, Photos).
+// The tile rows: horizontal lines inside the roof's triangle (apex 280,120; eaves 110 to 450 at 256).
+const rows = [236, 212, 188, 164].map((y) => {
+  const half = ((y - 120) / 136) * 170 - 8;
+  return `M${280 - half} ${y}h${half * 2}`;
+});
+---
+
+<svg class="hero-drawing" viewBox="0 0 560 420" aria-hidden="true" focusable="false">
+  <rect class="hero-sky" width="560" height="420" rx="8"></rect>
+  <path class="hero-hill-far" d="M0 300c80-40 150-52 230-30s170 10 230-18 80-20 100-14V420H0z"></path>
+  <path class="hero-hill" d="M0 340c90-26 170-30 260-8s190 6 300-20V420H0z"></path>
+  <path class="hero-wall" d="M150 250h260v120H150z"></path>
+  <path class="hero-window" d="M190 290h44v44h-44zM326 290h44v44h-44z"></path>
+  <path class="hero-door" d="M258 306h44v64h-44z"></path>
+  <path class="hero-roof" d="M110 256 280 120l170 136z"></path>
+  {rows.map((d) => <path class="hero-tiles" d={d} />)}
+  <path class="hero-ridge" d="M104 260 280 116l176 144"></path>
+  <path class="hero-chimney" d="M360 150h26v52l-26-20z"></path>
+</svg>

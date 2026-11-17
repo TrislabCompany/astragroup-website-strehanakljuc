@@ -8,6 +8,7 @@ import { languagePaths, localizedPath, t, type Lang } from "../../i18n";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { entrySlug } from "../../lib/content";
 import { sortedItems, type ItemCollection } from "../../lib/items";
+import { menuLinks, QUOTE_PATH } from "../../lib/navigation";
 import site from "../../site.config";
 
 export const getStaticPaths = languagePaths;
@@ -16,6 +17,8 @@ const { lang } = Astro.props as { lang: Lang };
 const sections = await Promise.all(
   site.collections.map(async (collection) => ({ ...collection, items: await sortedItems(collection.id as ItemCollection, lang) })),
 );
+// The pages of the site's own design; the lists of items follow below.
+const pages = menuLinks(lang).filter(({ href }) => !site.collections.some((collection) => href === `/${collection.id}`));
 const legal = [
   { on: site.legalPages.imprint, href: "/imprint", label: t(lang, "legal.imprint") },
   { on: site.legalPages.privacy, href: "/privacy", label: t(lang, "legal.privacy") },
@@ -25,9 +28,17 @@ const legal = [
 ---
 
 <BaseLayout title={t(lang, "legal.sitemap")} lang={lang}>
+  <div class="wrap page prose">
   <h1>{t(lang, "legal.sitemap")}</h1>
   <ul class="sitemap">
     <li><a href={localizedPath(lang)}>{t(lang, "nav.home")}</a></li>
+    {
+      pages.map(({ href, label }) => (
+        <li>
+          <a href={localizedPath(lang, href)}>{label}</a>
+        </li>
+      ))
+    }
     {
       sections.map((section) => (
         <li>
@@ -42,8 +53,7 @@ const legal = [
         </li>
       ))
     }
-    <li><a href={localizedPath(lang, "/about")}>{t(lang, "nav.about")}</a></li>
-    <li><a href={localizedPath(lang, "/contact")}>{t(lang, "nav.contact")}</a></li>
+    <li><a href={localizedPath(lang, QUOTE_PATH)}>{t(lang, "nav.quote")}</a></li>
     {
       legal.length > 0 && (
         <li>
@@ -59,4 +69,5 @@ const legal = [
       )
     }
   </ul>
+  </div>
 </BaseLayout>

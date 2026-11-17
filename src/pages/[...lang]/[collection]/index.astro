@@ -1,22 +1,71 @@
 ---
-import ContactCta from "../../../components/ContactCta.astro";
-import ItemCard from "../../../components/ItemCard.astro";
-import { type Lang } from "../../../i18n";
+// The page of a list of items. On this site the one list is the FAQ
+// (pogosta-vprasanja): every question is an accordion that opens without
+// JavaScript (<details>), with its answer, its sources and a link to the
+// question's own page. The page carries FAQPage structured data (JSON-LD).
+import { render } from "astro:content";
+import PageIntro from "../../../components/PageIntro.astro";
+import QuoteCta from "../../../components/QuoteCta.astro";
+import Sources from "../../../components/Sources.astro";
+import { localizedPath, t, type Lang } from "../../../i18n";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { entrySlug } from "../../../lib/content";
 import { collectionPaths, collectionSettings, sortedItems, type ItemCollection } from "../../../lib/items";
+import site from "../../../site.config";
 
 export const getStaticPaths = collectionPaths;
 
 const { lang, collection } = Astro.props as { lang: Lang; collection: ItemCollection };
 const settings = collectionSettings(collection);
-const items = await sortedItems(collection, lang);
+const entries = await sortedItems(collection, lang);
+const items = await Promise.all(
+  entries.map(async (entry) => ({ entry, slug: entrySlug(entry), Content: (await render(entry)).Content })),
+);
+const intro = { eyebrow: site.name, title: settings.title[lang], lead: settings.lead[lang], description: settings.lead[lang] };
+
+// The answers as plain text: the Markdown of these entries is plain sentences.
+const plain = (markdown = "") => markdown.replace(/\s+/g, " ").trim();
+const faq = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  inLanguage: lang,
+  mainEntity: entries.map((entry) => ({
+    "@type": "Question",
+    name: entry.data.title,
+    acceptedAnswer: { "@type": "Answer", text: plain(entry.body) },
+  })),
+};
+// "<" is escaped so the text can never close the script element.
+const json = JSON.stringify(faq).replace(/</g, "\\u003c");
 ---
 
 <BaseLayout title={settings.title[lang]} description={settings.lead[lang]} lang={lang}>
-  <h1>{settings.title[lang]}</h1>
-  <p class="lead">{settings.lead[lang]}</p>
-  <ul class="grid">
-    {items.map((entry) => <ItemCard entry={entry} collection={collection} lang={lang} level={2} />)}
-  </ul>
-  <ContactCta lang={lang} />
+  <script type="application/ld+json" is:inline set:html={json} slot="head" />
+  <PageIntro intro={intro} />
+  <section class="band">
+    <div class="wrap">
+      <div class="faq">
+        {
+          items.map(({ entry, slug, Content }) => (
+            <details class="faq-item" id={slug}>
+              <summary>
+                <h2>{entry.data.title}</h2>
+              </summary>
+              <div class="faq-answer prose">
+                <p class="lead">{entry.data.summary}</p>
+                <Content />
+                <Sources lang={lang} sources={entry.data.sources} />
+                <p>
+                  <a href={localizedPath(lang, `/${collection}/${slug}`)}>
+                    {t(lang, "faq.open")}: {entry.data.title}
+                  </a>
+                </p>
+              </div>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+  <QuoteCta lang={lang} />
 </BaseLayout>

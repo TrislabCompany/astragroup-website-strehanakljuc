@@ -1,0 +1,22 @@
+---
+// Ravne strehe: waterproofing, insulation and terraces, and the steps.
+import PageIntro from "../../components/PageIntro.astro";
+import QuoteCta from "../../components/QuoteCta.astro";
+import TextBlocks from "../../components/TextBlocks.astro";
+import Timeline from "../../components/Timeline.astro";
+import { languagePaths, type Lang } from "../../i18n";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { pageTexts } from "../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { flatRoofs } = pageTexts(lang);
+---
+
+<BaseLayout title={flatRoofs.intro.title} description={flatRoofs.intro.description} lang={lang}>
+  <PageIntro intro={flatRoofs.intro} />
+  <TextBlocks blocks={flatRoofs.blocks} />
+  <Timeline lang={lang} id="steps" heading={flatRoofs.stepsHeading} steps={flatRoofs.steps} />
+  <QuoteCta lang={lang} />
+</BaseLayout>

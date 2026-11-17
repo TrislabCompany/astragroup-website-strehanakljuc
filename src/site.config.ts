@@ -6,6 +6,7 @@
 // First written by `pnpm init-site` from site.yaml; from then on it is the
 // site's own.
 
+import shareImage from "./assets/share.png";
 import type { SiteSettings } from "./lib/site-settings";
 
 /** The site's languages. With one language, the URLs have no language prefix. */
@@ -20,6 +21,12 @@ const site: SiteSettings<Lang> = {
   },
   languages: languages,
   defaultLanguage: "sl",
+  shareImage: {
+    src: shareImage,
+    alt: {
+      sl: "Streha na ključ: risba hiše z bakreno streho na skrilasti podlagi in napis Prenova strehe in nova streha, od ogleda do predaje."
+    }
+  },
   themeColor: "#263a45",
   collections: [
     {
@@ -50,7 +57,9 @@ const site: SiteSettings<Lang> = {
   },
   contact: {
     // No public mailbox: the quote request form is the site's only contact.
-    topics: []
+    topics: [],
+    // A plain link, shown in the imprint only: the site names the company there alone.
+    mapUrl: "https://www.google.com/maps/search/?api=1&query=Ulica+15.+maja+2%2C+6000+Koper"
   },
   legalPages: {
     imprint: true,

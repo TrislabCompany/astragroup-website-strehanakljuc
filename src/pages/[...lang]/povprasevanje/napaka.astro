@@ -1,0 +1,24 @@
+---
+// The error page the form Worker sends the visitor to when a request could
+// not be sent (src/lib/quote-form.ts). Out of search.
+import PageIntro from "../../../components/PageIntro.astro";
+import { languagePaths, localizedPath, t, type Lang } from "../../../i18n";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { QUOTE_PATH } from "../../../lib/navigation";
+import { pageTexts } from "../../../texts";
+
+export const getStaticPaths = languagePaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const { failed } = pageTexts(lang);
+---
+
+<BaseLayout title={failed.intro.title} description={failed.intro.description} lang={lang} noindex>
+  <PageIntro intro={failed.intro} />
+  <section class="band">
+    <div class="wrap prose">
+      <p>{failed.text}</p>
+      <p><a class="button" href={localizedPath(lang, QUOTE_PATH)}>{t(lang, "cta.quote")}</a></p>
+    </div>
+  </section>
+</BaseLayout>

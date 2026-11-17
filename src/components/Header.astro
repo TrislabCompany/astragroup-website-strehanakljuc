@@ -1,5 +1,11 @@
 ---
+// The site's header on slate: the logo and name, the main menu and the quote
+// request as a button. On a phone the links fold into a menu that opens
+// without JavaScript (<details>); the desktop menu and the phone menu are two
+// copies, and CSS shows exactly one, so only one is ever in the
+// accessibility tree.
 import { localizedPath, t, type Lang } from "../i18n";
+import { isCurrent, menuLinks, QUOTE_PATH } from "../lib/navigation";
 import site from "../site.config";
 import LanguageSwitch from "./LanguageSwitch.astro";
 import Logo from "./Logo.astro";
@@ -11,14 +17,8 @@ interface Props {
 }
 
 const { lang, path, available } = Astro.props;
-// The lists of items marked nav in src/site.config.ts, then the fixed pages.
-const links = [
-  ...site.collections.filter((collection) => collection.nav).map((collection) => ({ href: `/${collection.id}`, label: collection.title[lang] })),
-  { href: "/about", label: t(lang, "nav.about") },
-  { href: "/contact", label: t(lang, "nav.contact") },
-];
-// A section's link stays marked on its detail pages (/services/first-service).
-const current = (href: string) => path === href || path.startsWith(`${href}/`);
+const links = menuLinks(lang);
+const quoteCurrent = isCurrent(path, QUOTE_PATH);
 ---
 
 <header class="site-header">
@@ -28,14 +28,38 @@ const current = (href: string) => path === href || path.startsWith(`${href}/`);
       <span>{site.name}</span>
     </a>
     <nav class="main-nav" aria-label={t(lang, "nav.main")}>
-      {
-        links.map(({ href, label }) => (
-          <a href={localizedPath(lang, href)} aria-current={current(href) ? "page" : undefined}>
-            {label}
-          </a>
-        ))
-      }
+      <ul>
+        {
+          links.map(({ href, label }) => (
+            <li>
+              <a href={localizedPath(lang, href)} aria-current={isCurrent(path, href) ? "page" : undefined}>
+                {label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="button" href={localizedPath(lang, QUOTE_PATH)} aria-current={quoteCurrent ? "page" : undefined}>{t(lang, "nav.quote")}</a>
     </nav>
+    <details class="phone-menu">
+      <summary>{t(lang, "nav.menu")}</summary>
+      <nav aria-label={t(lang, "nav.main")}>
+        <ul>
+          {
+            links.map(({ href, label }) => (
+              <li>
+                <a href={localizedPath(lang, href)} aria-current={isCurrent(path, href) ? "page" : undefined}>
+                  {label}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={localizedPath(lang, QUOTE_PATH)} aria-current={quoteCurrent ? "page" : undefined}>{t(lang, "nav.quote")}</a>
+          </li>
+        </ul>
+      </nav>
+    </details>
     <LanguageSwitch lang={lang} path={path} available={available} />
   </div>
 </header>

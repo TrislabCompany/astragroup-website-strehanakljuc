@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "url": ["/", "/about", "/contact", "/pogosta-vprasanja"],
+      "url": ["/", "/prenova-strehe", "/povprasevanje", "/pogosta-vprasanja"],
       "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--headless=new --no-sandbox --disable-dev-shm-usage"

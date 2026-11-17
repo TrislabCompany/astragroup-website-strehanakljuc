@@ -1,0 +1,32 @@
+---
+// The sources of a fact, each with the date it was checked (src/lib/sources.ts,
+// or an FAQ entry's front matter).
+import { locale, t, type Lang } from "../i18n";
+import type { Source } from "../lib/sources";
+
+interface Props {
+  lang: Lang;
+  sources: Source[];
+}
+
+const { lang, sources } = Astro.props;
+const date = (day: string) => new Date(`${day}T12:00:00Z`).toLocaleDateString(locale(lang), { day: "numeric", month: "numeric", year: "numeric", timeZone: "UTC" });
+---
+
+{
+  sources.length > 0 && (
+    <div class="sources">
+      <p class="sources-label">{t(lang, "faq.sources")}</p>
+      <ul>
+        {sources.map((source) => (
+          <li>
+            <a href={source.url} rel="noopener noreferrer">
+              {source.title}
+            </a>
+            , {t(lang, "faq.checked")} <time datetime={source.checked}>{date(source.checked)}</time>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}

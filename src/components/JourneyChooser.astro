@@ -1,0 +1,34 @@
+---
+// The two-journey chooser: two large links, renovation and a new turnkey
+// roof, each with one sentence, and a smaller link to flat roofs.
+import { localizedPath, type Lang } from "../i18n";
+import { pageTexts } from "../texts";
+
+interface Props {
+  lang: Lang;
+  flatRoofLabel: string;
+}
+
+const { lang, flatRoofLabel } = Astro.props;
+const { journeys } = pageTexts(lang);
+const choices = [
+  { href: "/prenova-strehe", ...journeys.renovation },
+  { href: "/nova-streha-na-kljuc", ...journeys.newRoof },
+];
+---
+
+<ul class="journeys">
+  {
+    choices.map((choice) => (
+      <li>
+        <a class="journey" href={localizedPath(lang, choice.href)}>
+          <span class="journey-title">{choice.title}</span>
+          <span class="journey-text">{choice.text}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+<p class="journey-small">
+  {flatRoofLabel} <a href={localizedPath(lang, "/ravne-strehe")}>{journeys.flatRoof.title}</a>
+</p>

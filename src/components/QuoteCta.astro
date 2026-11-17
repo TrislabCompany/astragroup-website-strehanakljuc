@@ -1,0 +1,29 @@
+---
+// The quote request at the end of a page, on slate: what happens after it,
+// "free and without obligation", and the button to the form.
+import { localizedPath, t, type Lang } from "../i18n";
+import { QUOTE_PATH } from "../lib/navigation";
+import { pageTexts } from "../texts";
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const { quoteCta } = pageTexts(lang);
+---
+
+<section class="band band-dark quote-cta" aria-labelledby="quote-cta">
+  <div class="wrap quote-cta-row">
+    <div>
+      <h2 id="quote-cta">{quoteCta.heading}</h2>
+      <p>{quoteCta.text}</p>
+      <ol class="next-steps">
+        {quoteCta.next.map((item) => <li>{item}</li>)}
+      </ol>
+    </div>
+    <p class="quote-cta-action">
+      <a class="button button-large" href={localizedPath(lang, QUOTE_PATH)}>{t(lang, "nav.quote")}</a>
+    </p>
+  </div>
+</section>

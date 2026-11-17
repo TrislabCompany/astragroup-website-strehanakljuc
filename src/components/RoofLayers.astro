@@ -1,0 +1,62 @@
+---
+// The roof-layers cross-section: one drawn SVG, the six layers from the
+// structure to the covering, stepped so each layer shows, with a numbered
+// marker per layer. The names and what each layer does are text, in the
+// numbered list next to it; the drawing has its accessible name from
+// src/texts/ (docs/brief.md). Colours come from global.css (.layers-*).
+import type { Lang } from "../i18n";
+import { pageTexts } from "../texts";
+
+interface Props {
+  lang: Lang;
+  heading: string;
+  lead: string;
+}
+
+const { lang, heading, lead } = Astro.props;
+const { layers } = pageTexts(lang);
+// The numbered markers are HTML laid over the drawing (.layers-marker-N in
+// global.css places each at a layer's right end), not SVG text: axe can't
+// measure the contrast of SVG text, and pa11y fails on that.
+const battens = [52, 102, 152, 202, 252, 302];
+const tiles = [40, 92, 144, 196, 248];
+---
+
+<section class="band band-surface" aria-labelledby="roof-layers">
+  <div class="wrap layers">
+    <div class="layers-text">
+      <h2 id="roof-layers">{heading}</h2>
+      <p class="lead">{lead}</p>
+      <ol class="layers-list">
+        {
+          layers.layers.map((layer) => (
+            <li>
+              <strong>{layer.name}</strong>
+              <span>{layer.text}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+    <figure class="layers-figure">
+      <svg viewBox="0 0 640 360" role="img" aria-labelledby="roof-layers-title">
+        <title id="roof-layers-title">{layers.title}: {layers.layers.map((layer, index) => `${index + 1} ${layer.name}`).join(", ")}</title>
+        <rect class="layers-rafter" x="40" y="280" width="560" height="50" rx="2"></rect>
+        <path class="layers-grain" d="M52 295h520M60 305h500M48 316h536"></path>
+        <rect class="layers-vapour" x="40" y="272" width="500" height="8"></rect>
+        <rect class="layers-insulation" x="40" y="202" width="440" height="70"></rect>
+        <path
+          class="layers-fibre"
+          d="M48 237l14-22 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-44 14 44 14-22"
+        ></path>
+        <rect class="layers-underlay" x="40" y="194" width="380" height="8"></rect>
+        <rect class="layers-wood" x="40" y="170" width="320" height="24"></rect>
+        {battens.map((x) => <rect class="layers-wood" x={x} y="154" width="22" height="16" />)}
+        {tiles.map((x) => <path class="layers-tile" d={`M${x} 154 l8 -44 h52 l-8 44 z`} />)}
+      </svg>
+      <ol class="layers-markers" aria-hidden="true">
+        {layers.layers.map((_, index) => <li class={`layers-marker layers-marker-${index + 1}`}>{index + 1}</li>)}
+      </ol>
+    </figure>
+  </div>
+</section>

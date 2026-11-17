@@ -19,7 +19,7 @@ An [Astro](https://astro.build) site built into static files, served by Cloudfla
 
 The texts of the site's own pages are in `src/texts/sl.ts`, the menu in `src/lib/navigation.ts`, and the sources of the facts, with the day each was checked, in `src/lib/sources.ts` and in each FAQ entry. The site's own components: the journey chooser, the numbered timeline, the "what is included" checklist, the roof-layers drawing, the coverings comparison, the FAQ accordion, the quote form and the sticky enquiry button on phones. `scripts/check-design.mjs` checks the brief's design rules on every built page.
 
-**The quote form is the site's only contact.** It is not sent anywhere yet: the shared form Worker isn't built. Until it is, the form's button is off and a note says so. How to switch it on: `src/lib/quote-form.ts`.
+**The quote form is the site's only contact.** It posts to Trislab's shared form Worker of each Environment, with Cloudflare Turnstile. One build runs everywhere, so the form page reads the Worker's address and the Turnstile site key from the Environment's `/config.json` (`PUBLIC_FORMS_URL`, `PUBLIC_TURNSTILE_SITE_KEY`, [src/lib/quote-form.ts](src/lib/quote-form.ts)); without them, or without JavaScript, the button stays off and a note says why.
 
 **Languages:** Slovenian. The first is the default; each language lives under its own URL.
 
@@ -35,7 +35,7 @@ How a change moves between them is in [docs/deployment.md](docs/deployment.md). 
 
 ## Before production
 
-- Switch the quote form on (`src/lib/quote-form.ts`): the Worker's address, the Turnstile site key, the form page's Content-Security-Policy rule in `public/_headers`, and the claims of the legal pages reviewed for the form page.
+- Test the quote form: a submission end to end on dev, staging and production, a submission without a valid Turnstile token refused, and the form with a keyboard and a screen reader, Turnstile included.
 - Have a lawyer review the privacy policy and the accessibility statement (`src/content/legal/sl/`); name the mail provider in the privacy policy.
 - Check the permit and subsidy facts against their sources and update the dates (`src/lib/sources.ts`, the FAQ entries).
 - Replace the home page's drawing with a licensed stock photo if one is chosen (docs/brief.md, Photos).

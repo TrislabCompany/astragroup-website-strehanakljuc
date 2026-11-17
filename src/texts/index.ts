@@ -145,7 +145,8 @@ export interface PageTexts {
     optional: string;
     choose: string;
     submit: string;
-    notConnected: string;
+    /** Shown while the form can't be sent: before the page has the Environment's settings, or without JavaScript. */
+    formOff: string;
     nextHeading: string;
     next: string[];
     sendHeading: string;

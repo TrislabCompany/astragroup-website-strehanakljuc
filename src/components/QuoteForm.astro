@@ -1,13 +1,18 @@
 ---
 // The quote request form, type of work first (docs/brief.md): (1) the type of
 // work, (2) the roof, (3) how to reach the visitor and their consent. It is a
-// plain form post with no JavaScript: the steps are three numbered fieldsets
-// on one page, and the browser checks the required fields, showing each error
-// next to its field. The Worker checks everything again (src/lib/quote-form.ts).
+// plain form post: the steps are three numbered fieldsets on one page, and the
+// browser checks the required fields, showing each error next to its field.
+// The Worker checks everything again.
+//
+// The Worker's address and the Turnstile site key differ per Environment, and
+// one build runs in all of them, so the script below reads them from
+// /config.json (src/lib/quote-form.ts). Until it has both, the button is off
+// and a note says why; with them it sets the form's action, adds the Turnstile
+// widget and switches the button on.
 import { localizedPath, t, type Lang } from "../i18n";
 import { quoteForm } from "../lib/quote-form";
 import { pageTexts } from "../texts";
-import Turnstile from "./forms/Turnstile.astro";
 
 interface Props {
   lang: Lang;
@@ -16,11 +21,10 @@ interface Props {
 const { lang } = Astro.props;
 const { quote } = pageTexts(lang);
 const { work, roof, contact } = quote;
-const connected = Boolean(quoteForm.action);
 const step = (number: number, legend: string) => `${quote.stepLabel} ${number}: ${legend}`;
 ---
 
-<form class="quote-form" method="post" action={quoteForm.action} aria-describedby={connected ? undefined : "form-off"}>
+<form class="quote-form" method="post" aria-describedby="form-off" data-quote-form data-turnstile-action={quoteForm.turnstileAction}>
   <fieldset class="form-step">
     <legend>{step(1, work.legend)}</legend>
     <div class="choices">
@@ -103,11 +107,45 @@ const step = (number: number, legend: string) => `${quote.stepLabel} ${number}: 
     </div>
   </fieldset>
 
-  <Turnstile siteKey={quoteForm.turnstileSiteKey} action="povprasevanje" theme="light" />
+  <div class="form-challenge" data-turnstile hidden></div>
 
   <div class="form-submit">
-    <button class="button button-large" type="submit" disabled={!connected}>{quote.submit}</button>
+    <button class="button button-large" type="submit" disabled>{quote.submit}</button>
     <p class="hint">{t(lang, "cta.free")}</p>
-    {!connected && <p class="form-off" id="form-off">{quote.notConnected}</p>}
+    <p class="form-off" id="form-off">{quote.formOff}</p>
   </div>
 </form>
+
+<script>
+  import { loadConfig } from "../lib/config";
+  import { formTarget } from "../lib/quote-form";
+
+  const TURNSTILE_SCRIPT = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+
+  async function connect(form: HTMLFormElement) {
+    const target = formTarget(await loadConfig());
+    const challenge = form.querySelector<HTMLElement>("[data-turnstile]");
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]");
+    if (!target || !challenge || !button) return;
+
+    form.action = target.action;
+    const widget = document.createElement("div");
+    widget.className = "cf-turnstile";
+    widget.dataset.sitekey = target.siteKey;
+    widget.dataset.action = form.dataset.turnstileAction ?? "";
+    widget.dataset.theme = "light";
+    challenge.append(widget);
+    challenge.hidden = false;
+
+    const script = document.createElement("script");
+    script.src = TURNSTILE_SCRIPT;
+    script.async = true;
+    document.head.append(script);
+
+    button.disabled = false;
+    form.removeAttribute("aria-describedby");
+    form.querySelector("#form-off")?.remove();
+  }
+
+  for (const form of document.querySelectorAll<HTMLFormElement>("form[data-quote-form]")) void connect(form);
+</script>
